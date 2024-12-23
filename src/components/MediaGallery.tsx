@@ -55,7 +55,7 @@ const MediaGallery = () => {
         throw error;
       }
       
-      setMedia(data || []);
+      setMedia(data as MediaItem[]);
     } catch (error) {
       console.error('Error fetching media:', error);
       toast({
