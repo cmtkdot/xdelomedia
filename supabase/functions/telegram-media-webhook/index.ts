@@ -7,8 +7,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const generateSafeFileName = (text: string, fileExt: string): string => {
+  // Remove special characters and spaces, limit length
+  const safeName = text
+    .replace(/[^a-zA-Z0-9]/g, '_')
+    .toLowerCase()
+    .slice(0, 50);
+  return `${safeName}_${Date.now()}.${fileExt}`;
+};
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,7 +24,6 @@ serve(async (req) => {
   try {
     console.log("Received webhook request");
     
-    // Get the authorization header and bot token
     const authHeader = req.headers.get("x-telegram-bot-api-secret-token");
     const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
     const webhookSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET");
@@ -28,7 +35,6 @@ serve(async (req) => {
       headerMatches: authHeader === webhookSecret
     });
 
-    // Basic validation of the request
     if (!authHeader || !webhookSecret || authHeader !== webhookSecret) {
       console.error("Authentication failed - invalid or missing webhook secret");
       return new Response(
@@ -59,7 +65,6 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("Received webhook payload:", JSON.stringify(payload, null, 2));
 
-    // Extract message data (either from direct message or channel post)
     const message = payload.message || payload.channel_post;
     if (!message) {
       console.log("No message content found in payload");
@@ -75,7 +80,7 @@ serve(async (req) => {
     const chat = message.chat;
     console.log("Processing message from chat:", chat);
 
-    // Create or update channel record
+    // Create or update channel record - using string for user_id
     const { data: channelData, error: channelError } = await supabase
       .from("channels")
       .upsert({
@@ -83,7 +88,7 @@ serve(async (req) => {
         title: chat.title || `Chat ${chat.id}`,
         username: chat.username,
         is_active: true,
-        user_id: message.from?.id.toString(), // This might need adjustment based on your auth setup
+        user_id: message.from?.id.toString(), // Store as string instead of trying to convert to UUID
       }, {
         onConflict: 'chat_id'
       })
@@ -96,7 +101,7 @@ serve(async (req) => {
       console.log("Channel saved/updated:", channelData);
     }
 
-    // Save message to database
+    // Save message to database - using string for user_id
     const { data: messageData, error: messageError } = await supabase
       .from("messages")
       .insert({
@@ -104,7 +109,7 @@ serve(async (req) => {
         message_id: message.message_id,
         sender_name: message.from?.first_name || "Unknown",
         text: message.text || message.caption || null,
-        user_id: message.from?.id.toString(), // This might need adjustment based on your auth setup
+        user_id: message.from?.id.toString(), // Store as string instead of trying to convert to UUID
       })
       .select()
       .single();
@@ -141,16 +146,16 @@ serve(async (req) => {
 
       console.log("Downloaded media file, uploading to storage...");
 
-      // Determine file extension and type
+      // Generate file name using message caption or text
       const fileExt = fileData.result.file_path.split('.').pop();
-      const fileName = `${mediaItem.file_id}.${fileExt}`;
-      const mediaType = message.photo ? "photo" : message.document.mime_type;
+      const caption = message.caption || message.text || mediaItem.file_id;
+      const fileName = generateSafeFileName(caption, fileExt);
 
       // Upload to Supabase Storage
       const { data: storageData, error: storageError } = await supabase.storage
         .from("telegram-media")
         .upload(fileName, mediaBlob, {
-          contentType: mediaType,
+          contentType: mediaItem.mime_type || 'application/octet-stream',
           upsert: true,
         });
 
@@ -166,16 +171,16 @@ serve(async (req) => {
 
       console.log("File uploaded, saving metadata to database...");
 
-      // Save media metadata to database
+      // Save media metadata to database - using string for user_id
       const { data: mediaData, error: mediaError } = await supabase
         .from("media")
         .insert({
           chat_id: chat.id,
           file_name: fileName,
           file_url: publicUrl.publicUrl,
-          media_type: mediaType,
+          media_type: message.photo ? "photo" : mediaItem.mime_type,
           caption: message.caption,
-          user_id: message.from?.id.toString(), // This might need adjustment based on your auth setup
+          user_id: message.from?.id.toString(), // Store as string instead of trying to convert to UUID
           metadata: {
             telegram_file_id: mediaItem.file_id,
             width: mediaItem.width,
@@ -200,7 +205,7 @@ serve(async (req) => {
         event_type: "media_saved",
         chat_id: chat.id,
         details: {
-          media_type: mediaType,
+          media_type: message.photo ? "photo" : mediaItem.mime_type,
           file_name: fileName,
         },
       });
