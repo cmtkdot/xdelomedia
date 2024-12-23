@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useMediaData from "./media/hooks/useMediaData";
 import useMediaSubscription from "./media/hooks/useMediaSubscription";
 import MediaCard from "./media/MediaCard";
@@ -23,11 +23,6 @@ const MediaGallery = () => {
   const { data: mediaItems, isLoading } = useMediaData(filter);
   useMediaSubscription();
 
-  // Fetch channels when component mounts
-  useState(() => {
-    fetchChannels();
-  }, []);
-
   const fetchChannels = async () => {
     const { data, error } = await supabase
       .from('channels')
@@ -45,6 +40,11 @@ const MediaGallery = () => {
     
     setChannels(data || []);
   };
+
+  // Fetch channels when component mounts
+  useEffect(() => {
+    fetchChannels();
+  }, []);
 
   if (isLoading) {
     return <MediaGallerySkeleton />;
