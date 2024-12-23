@@ -7,14 +7,16 @@ const Stats = () => {
   const { data: stats } = useQuery({
     queryKey: ['stats'],
     queryFn: async () => {
-      const [usersCount, messagesCount] = await Promise.all([
+      const [usersCount, messagesCount, channelsCount] = await Promise.all([
         supabase.from('bot_users').select('id', { count: 'exact' }),
-        supabase.from('messages').select('id', { count: 'exact' })
+        supabase.from('messages').select('id', { count: 'exact' }),
+        supabase.from('channels').select('id', { count: 'exact' })
       ]);
       
       return {
         users: usersCount.count || 0,
-        messages: messagesCount.count || 0
+        messages: messagesCount.count || 0,
+        channels: channelsCount.count || 0
       };
     }
   });

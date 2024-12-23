@@ -11,8 +11,8 @@ const BotInfo = () => {
         .from('channels')
         .select('title, username')
         .eq('is_active', true)
-        .single();
-      return channels;
+        .limit(1);
+      return channels?.[0];
     }
   });
 
