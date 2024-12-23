@@ -57,7 +57,7 @@ serve(async (req) => {
     );
 
     const payload = await req.json();
-    console.log("Received webhook payload:", payload);
+    console.log("Received webhook payload:", JSON.stringify(payload, null, 2));
 
     // Handle photo messages
     if (payload.message?.photo || payload.channel_post?.photo) {
