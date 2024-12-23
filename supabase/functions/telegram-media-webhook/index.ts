@@ -16,15 +16,34 @@ serve(async (req) => {
   try {
     console.log("Received webhook request");
     
-    // Get the authorization header
+    // Get the authorization header and bot token
     const authHeader = req.headers.get("x-telegram-bot-api-secret-token");
     const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    const webhookSecret = Deno.env.get("TELEGRAM_WEBHOOK_SECRET");
     
+    console.log("Auth validation:", {
+      hasAuthHeader: !!authHeader,
+      hasBotToken: !!botToken,
+      hasWebhookSecret: !!webhookSecret,
+      headerMatches: authHeader === webhookSecret
+    });
+
     // Basic validation of the request
-    if (!authHeader || !botToken) {
-      console.error("Missing authentication token or bot token");
+    if (!authHeader || !webhookSecret || authHeader !== webhookSecret) {
+      console.error("Authentication failed - invalid or missing webhook secret");
       return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
+        JSON.stringify({ error: "Unauthorized - Invalid webhook secret" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!botToken) {
+      console.error("Missing bot token");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - Missing bot token" }),
         {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
