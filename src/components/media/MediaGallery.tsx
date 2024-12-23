@@ -9,6 +9,7 @@ import MediaGallerySkeleton from "./MediaGallerySkeleton";
 import useMediaSubscription from "./hooks/useMediaSubscription";
 import useMediaData from "./hooks/useMediaData";
 import { Image } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const MediaGallery = () => {
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
