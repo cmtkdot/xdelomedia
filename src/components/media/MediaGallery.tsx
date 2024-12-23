@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { MediaItem, Channel } from "./types";
 import MediaCard from "./MediaCard";
 import MediaFilters from "./MediaFilters";
-import { useNavigate } from "react-router-dom";
+import WebhookInterface from "../webhook/WebhookInterface";
 
 const MediaGallery = () => {
   const [media, setMedia] = useState<MediaItem[]>([]);
@@ -15,7 +15,6 @@ const MediaGallery = () => {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [channels, setChannels] = useState<Channel[]>([]);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchChannels();
@@ -35,7 +34,6 @@ const MediaGallery = () => {
         console.log('New media received:', payload);
         const newMedia = payload.new as MediaItem;
         
-        // Fetch the complete media item with channel information
         const { data: completeMedia } = await supabase
           .from('media')
           .select(`
@@ -47,22 +45,6 @@ const MediaGallery = () => {
 
         if (completeMedia) {
           setMedia(prev => [completeMedia as MediaItem, ...prev]);
-          
-          // Forward to webhook
-          try {
-            const response = await supabase.functions.invoke('webhook-forwarder', {
-              body: { record_type: 'media', record_id: newMedia.id }
-            });
-            
-            if (!response.error) {
-              console.log('Successfully forwarded to webhook');
-            } else {
-              console.error('Webhook forwarding failed:', response.error);
-            }
-          } catch (error) {
-            console.error('Error forwarding to webhook:', error);
-          }
-
           toast({
             title: "New Media Received",
             description: completeMedia.caption || "New media file has been added",
@@ -134,7 +116,7 @@ const MediaGallery = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-transparent rounded-lg">
+      <div className="space-y-6">
         <h2 className="text-xl font-semibold mb-4 text-white">Media Gallery</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -146,8 +128,10 @@ const MediaGallery = () => {
   }
 
   return (
-    <div className="bg-transparent rounded-lg">
+    <div className="space-y-6">
       <h2 className="text-xl font-semibold mb-4 text-white">Media Gallery</h2>
+      
+      <WebhookInterface />
       
       <MediaFilters
         selectedChannel={selectedChannel}
