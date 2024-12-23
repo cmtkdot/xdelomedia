@@ -237,6 +237,10 @@ export type Database = {
           tag_id: string
         }[]
       }
+      get_media_data: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       upload_media: {
         Args: {
           p_user_id: string

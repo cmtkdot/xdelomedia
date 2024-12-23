@@ -13,6 +13,7 @@ const MediaCard = ({ item }: MediaCardProps) => {
           src={item.file_url}
           controls
           className="w-full h-48 object-cover"
+          poster={item.metadata?.thumbnail_url || undefined}
         >
           Your browser does not support the video tag.
         </video>

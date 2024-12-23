@@ -1,63 +1,27 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { MediaItem, Channel } from "./types";
 import MediaCard from "./MediaCard";
 import MediaFilters from "./MediaFilters";
 import WebhookInterface from "../webhook/WebhookInterface";
+import MediaGallerySkeleton from "./MediaGallerySkeleton";
+import useMediaSubscription from "./hooks/useMediaSubscription";
+import useMediaData from "./hooks/useMediaData";
 
 const MediaGallery = () => {
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
   const [channels, setChannels] = useState<Channel[]>([]);
   const { toast } = useToast();
+  const { media, setMedia, isLoading } = useMediaData(selectedChannel, selectedType);
+  
+  useMediaSubscription(setMedia, toast);
 
   useEffect(() => {
     fetchChannels();
-    fetchMedia();
-    setupRealtimeSubscription();
   }, []);
-
-  const setupRealtimeSubscription = () => {
-    console.log("Setting up realtime subscription");
-    const subscription = supabase
-      .channel('media_changes')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'media' 
-      }, async (payload) => {
-        console.log('New media received:', payload);
-        const newMedia = payload.new as MediaItem;
-        
-        const { data: completeMedia } = await supabase
-          .from('media')
-          .select(`
-            *,
-            chat:channels(title, username)
-          `)
-          .eq('id', newMedia.id)
-          .single();
-
-        if (completeMedia) {
-          setMedia(prev => [completeMedia as MediaItem, ...prev]);
-          toast({
-            title: "New Media Received",
-            description: completeMedia.caption || "New media file has been added",
-          });
-        }
-      })
-      .subscribe();
-
-    return () => {
-      console.log("Cleaning up subscription");
-      subscription.unsubscribe();
-    };
-  };
 
   const fetchChannels = async () => {
     const { data, error } = await supabase
@@ -72,59 +36,8 @@ const MediaGallery = () => {
     setChannels(data || []);
   };
 
-  const fetchMedia = async () => {
-    try {
-      console.log("Fetching media...");
-      setIsLoading(true);
-      let query = supabase
-        .from('media')
-        .select(`
-          *,
-          chat:channels(title, username)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (selectedChannel !== "all") {
-        query = query.eq('chat_id', selectedChannel);
-      }
-      
-      if (selectedType !== "all") {
-        query = query.eq('media_type', selectedType);
-      }
-
-      const { data, error } = await query;
-      
-      if (error) throw error;
-      
-      console.log("Fetched media data:", data);
-      setMedia(data as MediaItem[]);
-    } catch (error) {
-      console.error('Error fetching media:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load media gallery",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMedia();
-  }, [selectedChannel, selectedType]);
-
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h2 className="text-xl font-semibold mb-4 text-white">Media Gallery</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="w-full h-48 rounded-lg bg-white/5" />
-          ))}
-        </div>
-      </div>
-    );
+    return <MediaGallerySkeleton />;
   }
 
   return (
