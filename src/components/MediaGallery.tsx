@@ -88,11 +88,11 @@ const MediaGallery = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4">
-        <h2 className="text-xl font-semibold mb-4">Media Gallery</h2>
+      <div className="bg-transparent rounded-lg">
+        <h2 className="text-xl font-semibold mb-4 text-white">Media Gallery</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Skeleton key={i} className="w-full h-48 rounded-lg" />
+            <Skeleton key={i} className="w-full h-48 rounded-lg bg-white/5" />
           ))}
         </div>
       </div>
@@ -100,10 +100,10 @@ const MediaGallery = () => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-xl font-semibold mb-4">Telegram Media Gallery</h2>
+    <div className="bg-transparent rounded-lg">
+      <h2 className="text-xl font-semibold mb-4 text-white">Telegram Media Gallery</h2>
       {media.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">
+        <p className="text-center text-gray-400 py-8">
           No media files yet. Send some media to your Telegram bot!
         </p>
       ) : (
@@ -112,18 +112,18 @@ const MediaGallery = () => {
             {media.map((item) => (
               <div 
                 key={item.id} 
-                className="relative group bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200"
+                className="relative group backdrop-blur-lg bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300"
               >
                 <img
                   src={item.file_url}
                   alt={item.caption || 'Telegram Media'}
                   className="w-full h-48 object-cover transition-transform duration-200 group-hover:scale-105"
                 />
-                <div className="p-3 bg-white">
+                <div className="p-3 backdrop-blur-lg bg-black/40">
                   {item.caption && (
-                    <p className="font-medium text-gray-800 mb-2">{item.caption}</p>
+                    <p className="font-medium text-white mb-2">{item.caption}</p>
                   )}
-                  <div className="text-sm text-gray-500 space-y-1">
+                  <div className="text-sm text-gray-300 space-y-1">
                     <p>Type: {item.media_type}</p>
                     {item.metadata && (
                       <>

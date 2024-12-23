@@ -9,18 +9,18 @@ interface BotInfoProps {
 
 const BotInfo = ({ name, username, description }: BotInfoProps) => {
   return (
-    <Card className="w-full bg-white shadow-md">
+    <Card className="bg-transparent border-0 shadow-none">
       <CardHeader className="flex flex-row items-center gap-4">
-        <div className="p-2 bg-telegram-light rounded-full">
-          <Bot className="w-8 h-8 text-telegram-primary" />
+        <div className="p-2 bg-purple-500/20 rounded-full backdrop-blur-md border border-purple-500/30 animate-pulse">
+          <Bot className="w-8 h-8 text-purple-400" />
         </div>
         <div>
-          <CardTitle className="text-xl font-bold">{name}</CardTitle>
-          <p className="text-sm text-gray-500">@{username}</p>
+          <CardTitle className="text-xl font-bold text-white">{name}</CardTitle>
+          <p className="text-sm text-purple-300">@{username}</p>
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-700">{description}</p>
+        <p className="text-gray-300">{description}</p>
       </CardContent>
     </Card>
   );
