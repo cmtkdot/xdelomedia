@@ -16,9 +16,13 @@ const MediaGallery = () => {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [channels, setChannels] = useState<Channel[]>([]);
   const { toast } = useToast();
-  const { media, setMedia, isLoading } = useMediaData(selectedChannel, selectedType);
   
-  useMediaSubscription(setMedia, toast);
+  const { data: media, isLoading } = useMediaData({
+    selectedChannel,
+    selectedType
+  });
+  
+  useMediaSubscription();
 
   useEffect(() => {
     fetchChannels();
@@ -58,7 +62,7 @@ const MediaGallery = () => {
         channels={channels}
       />
 
-      {media.length === 0 ? (
+      {!media || media.length === 0 ? (
         <div className="text-center py-8 bg-white/5 rounded-lg border border-white/10 backdrop-blur-xl">
           <p className="text-gray-400">
             No media files yet. Send some media to your Telegram bot!
