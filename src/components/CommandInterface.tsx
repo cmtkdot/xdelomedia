@@ -28,11 +28,15 @@ const CommandInterface = () => {
         return;
       }
 
+      // Generate a timestamp-based message ID
+      const messageId = Date.now();
+
       // First, save the user's message
       const { error: messageError } = await supabase.from("messages").insert({
         user_id: user.id,
         sender_name: "User",
         text: message,
+        message_id: messageId,
       });
 
       if (messageError) throw messageError;
@@ -44,12 +48,13 @@ const CommandInterface = () => {
 
       if (error) throw error;
 
-      // Save the bot's response
+      // Save the bot's response with an incremented message ID
       if (data?.response) {
         const { error: botMessageError } = await supabase.from("messages").insert({
           user_id: user.id,
           sender_name: "Bot",
           text: data.response,
+          message_id: messageId + 1,
         });
 
         if (botMessageError) throw botMessageError;
