@@ -17,6 +17,7 @@ export type Database = {
           event_type: string
           id: string
           message_id: number | null
+          message_type: string | null
           user_id: string | null
         }
         Insert: {
@@ -26,6 +27,7 @@ export type Database = {
           event_type: string
           id?: string
           message_id?: number | null
+          message_type?: string | null
           user_id?: string | null
         }
         Update: {
@@ -35,6 +37,7 @@ export type Database = {
           event_type?: string
           id?: string
           message_id?: number | null
+          message_type?: string | null
           user_id?: string | null
         }
         Relationships: [
