@@ -139,15 +139,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "media_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "channels"
-            referencedColumns: ["chat_id"]
-          },
-        ]
+        Relationships: []
       }
       media_tags: {
         Row: {
@@ -165,22 +157,7 @@ export type Database = {
           media_id?: string
           tag_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "media_tags_media_id_fkey"
-            columns: ["media_id"]
-            isOneToOne: false
-            referencedRelation: "media"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "media_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       messages: {
         Row: {
@@ -216,15 +193,7 @@ export type Database = {
           text?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "messages_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "channels"
-            referencedColumns: ["chat_id"]
-          },
-        ]
+        Relationships: []
       }
       tags: {
         Row: {

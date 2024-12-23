@@ -28,10 +28,8 @@ const CommandInterface = () => {
         return;
       }
 
-      // Generate a timestamp-based message ID
       const messageId = Date.now();
 
-      // First, save the user's message
       const { error: messageError } = await supabase.from("messages").insert({
         user_id: user.id,
         sender_name: "User",
@@ -41,14 +39,12 @@ const CommandInterface = () => {
 
       if (messageError) throw messageError;
 
-      // Process the message using the Edge Function
       const { data, error } = await supabase.functions.invoke("process-message", {
         body: { message },
       });
 
       if (error) throw error;
 
-      // Save the bot's response with an incremented message ID
       if (data?.response) {
         const { error: botMessageError } = await supabase.from("messages").insert({
           user_id: user.id,
@@ -74,8 +70,8 @@ const CommandInterface = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      <h2 className="text-xl font-semibold mb-4">Command Interface</h2>
+    <div className="bg-transparent rounded-lg">
+      <h2 className="text-xl font-semibold mb-4 text-white">Command Interface</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex gap-2">
           <Input
@@ -83,8 +79,13 @@ const CommandInterface = () => {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type a command or message..."
             disabled={isLoading}
+            className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
           />
-          <Button type="submit" disabled={isLoading}>
+          <Button 
+            type="submit" 
+            disabled={isLoading}
+            className="bg-[#0088cc] hover:bg-[#0088cc]/80 text-white"
+          >
             Send
           </Button>
         </div>
