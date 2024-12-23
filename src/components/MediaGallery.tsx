@@ -3,20 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "./ui/scroll-area";
 import { Skeleton } from "./ui/skeleton";
 import { useToast } from "./ui/use-toast";
+import { Database } from "@/integrations/supabase/types";
 
-interface MediaItem {
-  id: string;
-  file_url: string;
-  caption: string;
-  media_type: string;
-  created_at: string;
+type MediaItem = Database['public']['Tables']['media']['Row'] & {
   metadata: {
     telegram_file_id: string;
     width: number;
     height: number;
     file_size: number;
   } | null;
-}
+};
 
 const MediaGallery = () => {
   const [media, setMedia] = useState<MediaItem[]>([]);
