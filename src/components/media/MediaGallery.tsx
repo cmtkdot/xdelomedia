@@ -31,10 +31,26 @@ const MediaGallery = () => {
         event: 'INSERT', 
         schema: 'public', 
         table: 'media' 
-      }, payload => {
+      }, async (payload) => {
         console.log('New media received:', payload);
         const newMedia = payload.new as MediaItem;
         setMedia(prev => [newMedia, ...prev]);
+        
+        // Forward to webhook
+        try {
+          const response = await supabase.functions.invoke('webhook-forwarder', {
+            body: { record_type: 'media', record_id: newMedia.id }
+          });
+          
+          if (!response.error) {
+            console.log('Successfully forwarded to webhook');
+          } else {
+            console.error('Webhook forwarding failed:', response.error);
+          }
+        } catch (error) {
+          console.error('Error forwarding to webhook:', error);
+        }
+
         toast({
           title: "New Media Received",
           description: newMedia.caption || "New media file has been added",
@@ -69,7 +85,7 @@ const MediaGallery = () => {
         .from('media')
         .select(`
           *,
-          chat:channels!inner(title, username)
+          chat:channels(title, username)
         `)
         .order('created_at', { ascending: false });
 

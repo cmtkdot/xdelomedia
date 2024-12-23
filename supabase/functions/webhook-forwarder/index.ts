@@ -26,7 +26,10 @@ Deno.serve(async (req) => {
       case 'media':
         const { data: mediaData } = await supabase
           .from('media')
-          .select('*')
+          .select(`
+            *,
+            chat:channels(title, username)
+          `)
           .eq('id', record_id)
           .single();
         data = mediaData;
