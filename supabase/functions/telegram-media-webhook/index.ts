@@ -72,6 +72,9 @@ serve(async (req) => {
     const chat = message.chat;
     const userId = '00000000-0000-0000-0000-000000000000'; // Default system user ID
 
+    await saveChannel(supabase, chat, userId);
+    await saveMessage(supabase, chat, message, userId);
+
     // Log the activity with the message type
     await supabase.from("bot_activities").insert({
       event_type: "message_received",
@@ -86,9 +89,6 @@ serve(async (req) => {
         message_type: messageType
       }
     });
-
-    await saveChannel(supabase, chat, userId);
-    await saveMessage(supabase, chat, message, userId);
 
     if (message.photo || message.document || message.video || message.audio || 
         message.voice || message.animation || message.sticker) {
@@ -127,7 +127,8 @@ serve(async (req) => {
         .from("telegram-media")
         .getPublicUrl(fileName);
 
-      await saveMedia(
+      // Save media with media_group_id if it exists
+      const mediaData = await saveMedia(
         supabase,
         userId,
         chat.id,
@@ -142,8 +143,22 @@ serve(async (req) => {
           file_size: mediaItem.file_size,
           mime_type: message.document?.mime_type,
           original_filename: message.document?.file_name,
-        }
+        },
+        message.media_group_id
       );
+
+      // If this media is part of a group and has a caption, sync it to other media in the group
+      if (message.media_group_id && message.caption) {
+        const { error: updateError } = await supabase
+          .from('media')
+          .update({ caption: message.caption })
+          .eq('media_group_id', message.media_group_id)
+          .is('caption', null);
+
+        if (updateError) {
+          console.error('Error syncing caption to group:', updateError);
+        }
+      }
 
       await supabase.from("bot_activities").insert({
         event_type: "media_saved",
@@ -152,6 +167,7 @@ serve(async (req) => {
         details: {
           media_type: mediaType,
           file_name: fileName,
+          media_group_id: message.media_group_id
         },
       });
     }

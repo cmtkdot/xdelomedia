@@ -52,7 +52,8 @@ export const saveMedia = async (
   fileUrl: string,
   mediaType: string,
   caption: string | null,
-  metadata: any
+  metadata: any,
+  mediaGroupId?: string
 ) => {
   const { data: mediaData, error: mediaError } = await supabase
     .from("media")
@@ -63,7 +64,8 @@ export const saveMedia = async (
       file_url: fileUrl,
       media_type: mediaType,
       caption,
-      metadata
+      metadata,
+      media_group_id: mediaGroupId
     })
     .select()
     .single();

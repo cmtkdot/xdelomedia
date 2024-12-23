@@ -121,6 +121,7 @@ export type Database = {
           file_name: string
           file_url: string
           id: string
+          media_group_id: string | null
           media_type: string
           metadata: Json | null
           updated_at: string | null
@@ -133,6 +134,7 @@ export type Database = {
           file_name: string
           file_url: string
           id?: string
+          media_group_id?: string | null
           media_type: string
           metadata?: Json | null
           updated_at?: string | null
@@ -145,6 +147,7 @@ export type Database = {
           file_name?: string
           file_url?: string
           id?: string
+          media_group_id?: string | null
           media_type?: string
           metadata?: Json | null
           updated_at?: string | null
