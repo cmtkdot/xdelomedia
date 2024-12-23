@@ -34,6 +34,41 @@ const Navigation = () => {
 
   return (
     <>
+      {/* Desktop Header Navigation */}
+      <div className="hidden md:flex fixed top-0 left-0 right-0 h-16 bg-black/90 backdrop-blur-xl border-b border-white/10 z-40 px-4">
+        <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
+          <div className="flex items-center space-x-8">
+            <Link to="/" className="text-white font-semibold text-lg">
+              Telegram Manager
+            </Link>
+            <div className="flex items-center space-x-2">
+              {navItems.map((item) => (
+                <Link key={item.path} to={item.path}>
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "text-white hover:bg-white/10",
+                      location.pathname === item.path && "bg-white/10"
+                    )}
+                  >
+                    <item.icon className="w-4 h-4 mr-2" />
+                    {item.label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <Button 
+            onClick={handleLogout}
+            variant="ghost" 
+            className="text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </Button>
+        </div>
+      </div>
+
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -42,10 +77,10 @@ const Navigation = () => {
         <Menu className="w-6 h-6" />
       </button>
 
-      {/* Sidebar Navigation */}
+      {/* Mobile Navigation */}
       <nav className={cn(
-        "fixed top-0 left-0 h-full w-64 bg-black/90 backdrop-blur-xl border-r border-white/10 transform transition-transform duration-200 ease-in-out z-40",
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        "fixed top-0 left-0 h-full w-64 bg-black/90 backdrop-blur-xl border-r border-white/10 transform transition-transform duration-200 ease-in-out z-40 md:hidden",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex flex-col h-full">
           <div className="p-4">

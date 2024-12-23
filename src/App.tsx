@@ -42,9 +42,9 @@ function App() {
                 path="/*"
                 element={
                   <ProtectedRoute>
-                    <div className="flex">
+                    <div className="flex flex-col">
                       <Navigation />
-                      <main className="flex-1 p-4 md:p-8">
+                      <main className="flex-1 p-4 md:p-8 mt-16">
                         <Routes>
                           <Route path="/" element={<Index />} />
                           <Route path="/messages" element={<Messages />} />
