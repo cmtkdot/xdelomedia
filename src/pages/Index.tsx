@@ -3,7 +3,7 @@ import BotInfo from "@/components/BotInfo";
 import MessageHistory from "@/components/MessageHistory";
 import CommandInterface from "@/components/CommandInterface";
 import Stats from "@/components/Stats";
-import MediaGallery from "@/components/MediaGallery";
+import MediaGallery from "@/components/media/MediaGallery";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -37,15 +37,11 @@ const Index = () => {
         
         <div className="grid gap-8 animate-fade-in">
           <div className="backdrop-blur-xl bg-white/5 rounded-lg border border-white/10 p-6 shadow-lg hover:shadow-purple-500/10 transition-all duration-300">
-            <BotInfo
-              name="System Bot"
-              username="system_bot"
-              description="A powerful AI-driven Telegram bot that helps manage your media and messages."
-            />
+            <BotInfo />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <Stats users={100} messages={1234} uptime="99.9%" />
+            <Stats />
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -1,13 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MessageSquare, Activity } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-interface StatsProps {
-  users: number;
-  messages: number;
-  uptime: string;
-}
+const Stats = () => {
+  const { data: stats } = useQuery({
+    queryKey: ['stats'],
+    queryFn: async () => {
+      const [usersCount, messagesCount] = await Promise.all([
+        supabase.from('bot_users').select('id', { count: 'exact' }),
+        supabase.from('messages').select('id', { count: 'exact' })
+      ]);
+      
+      return {
+        users: usersCount.count || 0,
+        messages: messagesCount.count || 0
+      };
+    }
+  });
 
-const Stats = ({ users, messages, uptime }: StatsProps) => {
   return (
     <>
       <Card className="backdrop-blur-xl bg-white/5 border-purple-500/20 hover:shadow-purple-500/10 transition-all duration-300">
@@ -16,7 +27,7 @@ const Stats = ({ users, messages, uptime }: StatsProps) => {
           <Users className="w-4 h-4 text-purple-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">{users}</div>
+          <div className="text-2xl font-bold text-white">{stats?.users || '...'}</div>
         </CardContent>
       </Card>
       <Card className="backdrop-blur-xl bg-white/5 border-purple-500/20 hover:shadow-purple-500/10 transition-all duration-300">
@@ -25,16 +36,18 @@ const Stats = ({ users, messages, uptime }: StatsProps) => {
           <MessageSquare className="w-4 h-4 text-purple-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">{messages}</div>
+          <div className="text-2xl font-bold text-white">{stats?.messages || '...'}</div>
         </CardContent>
       </Card>
       <Card className="backdrop-blur-xl bg-white/5 border-purple-500/20 hover:shadow-purple-500/10 transition-all duration-300">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-sm font-medium text-purple-300">Uptime</CardTitle>
+          <CardTitle className="text-sm font-medium text-purple-300">Active Channels</CardTitle>
           <Activity className="w-4 h-4 text-purple-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">{uptime}</div>
+          <div className="text-2xl font-bold text-white">
+            {stats?.channels || '...'}
+          </div>
         </CardContent>
       </Card>
     </>
