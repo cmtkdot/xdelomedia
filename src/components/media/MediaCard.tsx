@@ -8,11 +8,10 @@ interface MediaCardProps {
 
 const MediaCard = ({ item }: MediaCardProps) => {
   const isVideo = item.media_type === "video";
-  const metadata = item.metadata as { telegram_file_id: string; width: number; height: number; file_size: number; };
 
   return (
-    <Card className="overflow-hidden bg-black/20 border-white/10 hover:border-white/20 transition-colors">
-      <CardContent className="p-0">
+    <Card className="overflow-hidden bg-black/20 border-white/10 hover:border-white/20 transition-colors h-full">
+      <CardContent className="p-0 flex flex-col h-full">
         <div className="aspect-video relative">
           {isVideo ? (
             <video
@@ -26,18 +25,25 @@ const MediaCard = ({ item }: MediaCardProps) => {
               src={item.file_url}
               alt={item.caption || "Media"}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           )}
         </div>
         
-        <div className="p-4 space-y-2">
+        <div className="p-4 space-y-2 flex-1 flex flex-col">
           {item.caption && (
-            <p className="text-sm text-white/80 line-clamp-2">{item.caption}</p>
+            <p className="text-sm text-white/80 line-clamp-2 flex-1">
+              {item.caption}
+            </p>
           )}
           
-          <div className="flex justify-between items-center text-xs text-white/60">
-            <span>{item.chat?.title || "Unknown Channel"}</span>
-            <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+          <div className="flex justify-between items-center text-xs text-white/60 mt-auto">
+            <span className="truncate max-w-[150px]">
+              {item.chat?.title || "Unknown Channel"}
+            </span>
+            <span className="shrink-0">
+              {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+            </span>
           </div>
         </div>
       </CardContent>

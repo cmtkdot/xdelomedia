@@ -41,7 +41,6 @@ const MediaGallery = () => {
     setChannels(data || []);
   };
 
-  // Fetch channels when component mounts
   useEffect(() => {
     fetchChannels();
   }, []);
@@ -74,8 +73,8 @@ const MediaGallery = () => {
           </p>
         </div>
       ) : (
-        <ScrollArea className="h-[600px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <ScrollArea className="h-[calc(100vh-16rem)]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-6">
             {mediaItems.map((item) => (
               <MediaCard key={item.id} item={item} />
             ))}
