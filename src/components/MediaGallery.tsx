@@ -8,8 +8,8 @@ import { MediaFilter } from "./media/types";
 
 const MediaGallery = () => {
   const [filter, setFilter] = useState<MediaFilter>({
-    selectedChannel: "",
-    selectedType: "",
+    selectedChannel: "all",
+    selectedType: "all",
   });
 
   const { data: mediaItems, isLoading } = useMediaData(filter);

@@ -24,11 +24,11 @@ const useMediaData = (filter: MediaFilter) => {
         `)
         .order('created_at', { ascending: false });
 
-      if (filter.selectedChannel !== "") {
+      if (filter.selectedChannel !== "all") {
         query = query.eq('chat_id', filter.selectedChannel);
       }
       
-      if (filter.selectedType !== "") {
+      if (filter.selectedType !== "all") {
         query = query.eq('media_type', filter.selectedType);
       }
 
