@@ -59,22 +59,73 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("Received webhook payload:", JSON.stringify(payload, null, 2));
 
-    // Handle photo messages
-    if (payload.message?.photo || payload.channel_post?.photo) {
-      const message = payload.message || payload.channel_post;
-      const photo = message.photo[message.photo.length - 1]; // Get the highest quality photo
-      const caption = message.caption || "";
-      const chat_id = message.chat.id;
+    // Extract message data (either from direct message or channel post)
+    const message = payload.message || payload.channel_post;
+    if (!message) {
+      console.log("No message content found in payload");
+      return new Response(
+        JSON.stringify({ success: true, message: "No message content to process" }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
+    const chat = message.chat;
+    console.log("Processing message from chat:", chat);
+
+    // Create or update channel record
+    const { data: channelData, error: channelError } = await supabase
+      .from("channels")
+      .upsert({
+        chat_id: chat.id,
+        title: chat.title || `Chat ${chat.id}`,
+        username: chat.username,
+        is_active: true,
+        user_id: message.from?.id.toString(), // This might need adjustment based on your auth setup
+      }, {
+        onConflict: 'chat_id'
+      })
+      .select()
+      .single();
+
+    if (channelError) {
+      console.error("Error saving channel:", channelError);
+    } else {
+      console.log("Channel saved/updated:", channelData);
+    }
+
+    // Save message to database
+    const { data: messageData, error: messageError } = await supabase
+      .from("messages")
+      .insert({
+        chat_id: chat.id,
+        message_id: message.message_id,
+        sender_name: message.from?.first_name || "Unknown",
+        text: message.text || message.caption || null,
+        user_id: message.from?.id.toString(), // This might need adjustment based on your auth setup
+      })
+      .select()
+      .single();
+
+    if (messageError) {
+      console.error("Error saving message:", messageError);
+    } else {
+      console.log("Message saved:", messageData);
+    }
+
+    // Handle media (photos, documents, etc.)
+    if (message.photo || message.document) {
+      const mediaItem = message.photo ? 
+        message.photo[message.photo.length - 1] : // Get highest quality photo
+        message.document;
       
-      console.log("Processing photo message:", {
-        photo_id: photo.file_id,
-        chat_id,
-        caption,
-      });
-      
+      console.log("Processing media:", mediaItem);
+
       // Get file path from Telegram
       const fileResponse = await fetch(
-        `https://api.telegram.org/bot${botToken}/getFile?file_id=${photo.file_id}`
+        `https://api.telegram.org/bot${botToken}/getFile?file_id=${mediaItem.file_id}`
       );
       const fileData = await fileResponse.json();
       
@@ -90,12 +141,16 @@ serve(async (req) => {
 
       console.log("Downloaded media file, uploading to storage...");
 
+      // Determine file extension and type
+      const fileExt = fileData.result.file_path.split('.').pop();
+      const fileName = `${mediaItem.file_id}.${fileExt}`;
+      const mediaType = message.photo ? "photo" : message.document.mime_type;
+
       // Upload to Supabase Storage
-      const fileName = `${photo.file_id}.jpg`;
       const { data: storageData, error: storageError } = await supabase.storage
         .from("telegram-media")
         .upload(fileName, mediaBlob, {
-          contentType: "image/jpeg",
+          contentType: mediaType,
           upsert: true,
         });
 
@@ -115,48 +170,44 @@ serve(async (req) => {
       const { data: mediaData, error: mediaError } = await supabase
         .from("media")
         .insert({
-          chat_id: chat_id,
+          chat_id: chat.id,
           file_name: fileName,
           file_url: publicUrl.publicUrl,
-          media_type: "photo",
-          caption: caption,
+          media_type: mediaType,
+          caption: message.caption,
+          user_id: message.from?.id.toString(), // This might need adjustment based on your auth setup
           metadata: {
-            telegram_file_id: photo.file_id,
-            width: photo.width,
-            height: photo.height,
-            file_size: photo.file_size,
+            telegram_file_id: mediaItem.file_id,
+            width: mediaItem.width,
+            height: mediaItem.height,
+            file_size: mediaItem.file_size,
+            mime_type: message.document?.mime_type,
+            original_filename: message.document?.file_name,
           },
-        });
+        })
+        .select()
+        .single();
 
       if (mediaError) {
         console.error("Database insert error:", mediaError);
         throw mediaError;
       }
 
-      console.log("Successfully processed media message");
+      console.log("Successfully processed media message:", mediaData);
 
       // Log activity
       await supabase.from("bot_activities").insert({
         event_type: "media_saved",
-        chat_id: chat_id,
+        chat_id: chat.id,
         details: {
-          media_type: "photo",
+          media_type: mediaType,
           file_name: fileName,
         },
       });
-
-      return new Response(
-        JSON.stringify({ success: true, message: "Media saved successfully" }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
-      );
     }
 
-    // Return success for other message types
     return new Response(
-      JSON.stringify({ success: true, message: "Message processed" }),
+      JSON.stringify({ success: true, message: "Webhook processed successfully" }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
