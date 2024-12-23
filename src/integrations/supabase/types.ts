@@ -110,7 +110,7 @@ export type Database = {
           file_name: string
           file_url: string
           id: string
-          media_type: string | null
+          media_type: string
           metadata: Json | null
           updated_at: string | null
           user_id: string
@@ -122,7 +122,7 @@ export type Database = {
           file_name: string
           file_url: string
           id?: string
-          media_type?: string | null
+          media_type: string
           metadata?: Json | null
           updated_at?: string | null
           user_id: string
@@ -134,7 +134,7 @@ export type Database = {
           file_name?: string
           file_url?: string
           id?: string
-          media_type?: string | null
+          media_type?: string
           metadata?: Json | null
           updated_at?: string | null
           user_id?: string
