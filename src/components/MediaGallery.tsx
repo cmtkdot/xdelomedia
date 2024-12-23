@@ -21,6 +21,7 @@ const MediaGallery = () => {
 
   useEffect(() => {
     fetchMedia();
+    console.log("Setting up realtime subscription");
     const subscription = supabase
       .channel('media_changes')
       .on('postgres_changes', { 
@@ -39,12 +40,14 @@ const MediaGallery = () => {
       .subscribe();
 
     return () => {
+      console.log("Cleaning up subscription");
       subscription.unsubscribe();
     };
   }, []);
 
   const fetchMedia = async () => {
     try {
+      console.log("Fetching media...");
       setIsLoading(true);
       const { data, error } = await supabase
         .from('media')
@@ -55,6 +58,7 @@ const MediaGallery = () => {
         throw error;
       }
       
+      console.log("Fetched media data:", data);
       setMedia(data as MediaItem[]);
     } catch (error) {
       console.error('Error fetching media:', error);
@@ -78,6 +82,9 @@ const MediaGallery = () => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
+
+  console.log("Current media state:", media);
+  console.log("Is loading:", isLoading);
 
   if (isLoading) {
     return (
