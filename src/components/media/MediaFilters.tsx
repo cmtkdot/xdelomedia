@@ -17,9 +17,9 @@ const MediaFilters = ({
   channels = [],
 }: MediaFiltersProps) => {
   return (
-    <div className="flex gap-4 mb-6">
+    <div className="flex flex-col sm:flex-row gap-4 mb-6">
       <Select value={selectedChannel} onValueChange={setSelectedChannel}>
-        <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white">
+        <SelectTrigger className="w-full sm:w-[200px] bg-white/5 border-white/10 text-white">
           <SelectValue placeholder="Select Channel" />
         </SelectTrigger>
         <SelectContent className="bg-gray-900 border-white/10">
@@ -37,7 +37,7 @@ const MediaFilters = ({
       </Select>
 
       <Select value={selectedType} onValueChange={setSelectedType}>
-        <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white">
+        <SelectTrigger className="w-full sm:w-[200px] bg-white/5 border-white/10 text-white">
           <SelectValue placeholder="Select Media Type" />
         </SelectTrigger>
         <SelectContent className="bg-gray-900 border-white/10">

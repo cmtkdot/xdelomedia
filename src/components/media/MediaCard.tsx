@@ -30,7 +30,7 @@ const MediaCard = ({ item }: MediaCardProps) => {
           )}
         </div>
         
-        <div className="p-4 space-y-2 flex-1 flex flex-col">
+        <div className="p-3 md:p-4 space-y-2 flex-1 flex flex-col">
           {item.caption && (
             <p className="text-sm text-white/80 line-clamp-2 flex-1">
               {item.caption}
@@ -38,7 +38,7 @@ const MediaCard = ({ item }: MediaCardProps) => {
           )}
           
           <div className="flex justify-between items-center text-xs text-white/60 mt-auto">
-            <span className="truncate max-w-[150px]">
+            <span className="truncate max-w-[120px] md:max-w-[150px]">
               {item.chat?.title || "Unknown Channel"}
             </span>
             <span className="shrink-0">
