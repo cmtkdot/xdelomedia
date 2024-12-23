@@ -1,5 +1,5 @@
-import { formatFileSize, formatDate } from "@/lib/utils";
 import { MediaItem } from "./types";
+import { formatFileSize, formatDate } from "@/lib/utils";
 
 interface MediaCardProps {
   item: MediaItem;
@@ -21,14 +21,14 @@ const MediaCard = ({ item }: MediaCardProps) => {
     return (
       <img
         src={item.file_url}
-        alt={item.caption || 'Media'}
+        alt={item.caption || 'Telegram Media'}
         className="w-full h-48 object-cover transition-transform duration-200 group-hover:scale-105"
       />
     );
   };
 
   return (
-    <div className="relative group backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
+    <div className="relative group backdrop-blur-lg bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
       {renderMediaContent(item)}
       <div className="p-3 backdrop-blur-lg bg-black/40">
         {item.caption && (
@@ -36,7 +36,7 @@ const MediaCard = ({ item }: MediaCardProps) => {
         )}
         <div className="text-sm text-gray-300 space-y-1">
           <p>Type: {item.media_type}</p>
-          {item.chat && (
+          {item.chat?.title && (
             <p>Channel: {item.chat.title}</p>
           )}
           {item.metadata && (
