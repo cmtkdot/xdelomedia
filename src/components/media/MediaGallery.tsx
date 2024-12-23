@@ -1,32 +1,28 @@
 import { useEffect, useState } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useToast } from "@/components/ui/use-toast";
-import { MediaItem, Channel } from "./types";
+import useMediaData from "./hooks/useMediaData";
+import useMediaSubscription from "./hooks/useMediaSubscription";
 import MediaCard from "./MediaCard";
 import MediaFilters from "./MediaFilters";
-import WebhookInterface from "../webhook/WebhookInterface";
 import MediaGallerySkeleton from "./MediaGallerySkeleton";
-import useMediaSubscription from "./hooks/useMediaSubscription";
-import useMediaData from "./hooks/useMediaData";
+import { MediaFilter } from "./types";
 import { Image } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/components/ui/use-toast";
+import WebhookInterface from "../webhook/WebhookInterface";
 import { supabase } from "@/integrations/supabase/client";
+import { Channel } from "./types";
 
 const MediaGallery = () => {
-  const [selectedChannel, setSelectedChannel] = useState<string>("all");
-  const [selectedType, setSelectedType] = useState<string>("all");
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const { toast } = useToast();
-  
-  const { data: media, isLoading } = useMediaData({
-    selectedChannel,
-    selectedType
+  const [filter, setFilter] = useState<MediaFilter>({
+    selectedChannel: "all",
+    selectedType: "all",
   });
-  
-  useMediaSubscription();
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [selectedMedia, setSelectedMedia] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
-  useEffect(() => {
-    fetchChannels();
-  }, []);
+  const { data: mediaItems, isLoading } = useMediaData(filter);
+  useMediaSubscription();
 
   const fetchChannels = async () => {
     const { data, error } = await supabase
@@ -35,10 +31,36 @@ const MediaGallery = () => {
     
     if (error) {
       console.error('Error fetching channels:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load channels",
+        variant: "destructive",
+      });
       return;
     }
     
     setChannels(data || []);
+  };
+
+  useEffect(() => {
+    fetchChannels();
+  }, []);
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedMedia(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const getSelectedMediaData = () => {
+    if (!mediaItems) return [];
+    return mediaItems.filter(item => selectedMedia.has(item.id));
   };
 
   if (isLoading) {
@@ -46,33 +68,42 @@ const MediaGallery = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 px-2 md:px-6">
       <div className="flex items-center gap-2 mb-4">
         <Image className="w-6 h-6 text-[#0088cc]" />
         <h2 className="text-xl font-semibold text-white">Media Gallery</h2>
       </div>
       
-      <WebhookInterface />
+      <div className="w-full overflow-x-auto">
+        <WebhookInterface selectedMedia={getSelectedMediaData()} />
+      </div>
       
-      <MediaFilters
-        selectedChannel={selectedChannel}
-        setSelectedChannel={setSelectedChannel}
-        selectedType={selectedType}
-        setSelectedType={setSelectedType}
-        channels={channels}
-      />
+      <div className="w-full overflow-x-auto">
+        <MediaFilters
+          selectedChannel={filter.selectedChannel}
+          setSelectedChannel={(value) => setFilter(prev => ({ ...prev, selectedChannel: value }))}
+          selectedType={filter.selectedType}
+          setSelectedType={(value) => setFilter(prev => ({ ...prev, selectedType: value }))}
+          channels={channels}
+        />
+      </div>
 
-      {!media || media.length === 0 ? (
-        <div className="text-center py-8 bg-white/5 rounded-lg border border-white/10 backdrop-blur-xl">
+      {!mediaItems || mediaItems.length === 0 ? (
+        <div className="text-center py-8 bg-white/5 rounded-lg border border-white/10 backdrop-blur-xl mx-2">
           <p className="text-gray-400">
             No media files yet. Send some media to your Telegram bot!
           </p>
         </div>
       ) : (
-        <ScrollArea className="h-[600px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {media.map((item) => (
-              <MediaCard key={item.id} item={item} />
+        <ScrollArea className="h-[calc(100vh-16rem)] w-full px-2">
+          <div className="grid grid-cols-2 gap-4 pb-6">
+            {mediaItems.map((item) => (
+              <MediaCard 
+                key={item.id} 
+                item={item} 
+                isSelected={selectedMedia.has(item.id)}
+                onToggleSelect={handleToggleSelect}
+              />
             ))}
           </div>
         </ScrollArea>

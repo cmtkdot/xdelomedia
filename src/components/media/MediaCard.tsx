@@ -1,16 +1,27 @@
 import { MediaItem } from "./types";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDistanceToNow } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface MediaCardProps {
   item: MediaItem;
+  isSelected: boolean;
+  onToggleSelect: (id: string) => void;
 }
 
-const MediaCard = ({ item }: MediaCardProps) => {
+const MediaCard = ({ item, isSelected, onToggleSelect }: MediaCardProps) => {
   const isVideo = item.media_type === "video";
 
   return (
-    <Card className="overflow-hidden bg-black/20 border-white/10 hover:border-white/20 transition-colors h-full">
+    <Card className="group relative overflow-hidden bg-black/20 border-white/10 hover:border-white/20 transition-colors">
+      <div className="absolute top-2 left-2 z-10">
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={() => onToggleSelect(item.id)}
+          className="bg-white/10 border-white/20 data-[state=checked]:bg-[#0088cc] data-[state=checked]:border-[#0088cc]"
+        />
+      </div>
+      
       <CardContent className="p-0 flex flex-col h-full">
         <div className="aspect-video relative">
           {isVideo ? (
