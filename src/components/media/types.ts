@@ -1,13 +1,15 @@
 import { Database } from "@/integrations/supabase/types";
 
+export type MediaMetadata = {
+  telegram_file_id: string;
+  width: number;
+  height: number;
+  file_size: number;
+  thumbnail_url?: string;
+};
+
 export type MediaItem = Database['public']['Tables']['media']['Row'] & {
-  metadata: {
-    telegram_file_id: string;
-    width: number;
-    height: number;
-    file_size: number;
-    thumbnail_url?: string;
-  } | null;
+  metadata: MediaMetadata | null;
   chat?: {
     title: string;
     username: string;

@@ -139,7 +139,15 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_media_channel"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["chat_id"]
+          },
+        ]
       }
       media_tags: {
         Row: {
