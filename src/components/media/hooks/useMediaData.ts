@@ -25,7 +25,7 @@ const useMediaData = (filter: MediaFilter) => {
         .order('created_at', { ascending: false });
 
       if (filter.selectedChannel !== "all") {
-        query = query.eq('chat_id', filter.selectedChannel);
+        query = query.eq('chat_id', parseInt(filter.selectedChannel));
       }
       
       if (filter.selectedType !== "all") {
