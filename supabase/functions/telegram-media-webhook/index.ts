@@ -14,6 +14,24 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Received webhook request");
+    
+    // Get the authorization header
+    const authHeader = req.headers.get("x-telegram-bot-api-secret-token");
+    const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    
+    // Basic validation of the request
+    if (!authHeader || !botToken) {
+      console.error("Missing authentication token or bot token");
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -29,14 +47,20 @@ serve(async (req) => {
       const caption = message.caption || "";
       const chat_id = message.chat.id;
       
+      console.log("Processing photo message:", {
+        photo_id: photo.file_id,
+        chat_id,
+        caption,
+      });
+      
       // Get file path from Telegram
-      const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
       const fileResponse = await fetch(
         `https://api.telegram.org/bot${botToken}/getFile?file_id=${photo.file_id}`
       );
       const fileData = await fileResponse.json();
       
       if (!fileData.ok) {
+        console.error("Failed to get file path:", fileData);
         throw new Error("Failed to get file path from Telegram");
       }
 
@@ -44,6 +68,8 @@ serve(async (req) => {
       const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`;
       const mediaResponse = await fetch(fileUrl);
       const mediaBlob = await mediaResponse.blob();
+
+      console.log("Downloaded media file, uploading to storage...");
 
       // Upload to Supabase Storage
       const fileName = `${photo.file_id}.jpg`;
@@ -55,6 +81,7 @@ serve(async (req) => {
         });
 
       if (storageError) {
+        console.error("Storage upload error:", storageError);
         throw storageError;
       }
 
@@ -62,6 +89,8 @@ serve(async (req) => {
       const { data: publicUrl } = supabase.storage
         .from("telegram-media")
         .getPublicUrl(fileName);
+
+      console.log("File uploaded, saving metadata to database...");
 
       // Save media metadata to database
       const { data: mediaData, error: mediaError } = await supabase
@@ -81,8 +110,11 @@ serve(async (req) => {
         });
 
       if (mediaError) {
+        console.error("Database insert error:", mediaError);
         throw mediaError;
       }
+
+      console.log("Successfully processed media message");
 
       // Log activity
       await supabase.from("bot_activities").insert({
