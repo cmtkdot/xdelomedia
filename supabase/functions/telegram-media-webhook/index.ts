@@ -10,6 +10,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+const determineMessageType = (payload: any): string => {
+  if (payload.edited_channel_post) return 'edited_channel_post';
+  if (payload.channel_post) return 'channel_post';
+  if (payload.edited_message) return 'edited_message';
+  if (payload.message) return 'message';
+  return 'unknown';
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -48,7 +56,9 @@ serve(async (req) => {
     const payload = await req.json();
     console.log("Received webhook payload:", JSON.stringify(payload, null, 2));
 
-    const message = payload.message || payload.channel_post;
+    const messageType = determineMessageType(payload);
+    const message = payload.message || payload.channel_post || payload.edited_channel_post || payload.edited_message;
+    
     if (!message) {
       return new Response(
         JSON.stringify({ success: true, message: "No message content to process" }),
@@ -61,6 +71,21 @@ serve(async (req) => {
 
     const chat = message.chat;
     const userId = '00000000-0000-0000-0000-000000000000'; // Default system user ID
+
+    // Log the activity with the message type
+    await supabase.from("bot_activities").insert({
+      event_type: "message_received",
+      message_type: messageType,
+      chat_id: chat.id,
+      message_id: message.message_id,
+      user_id: userId,
+      details: {
+        update_id: payload.update_id,
+        edit_date: message.edit_date,
+        media_group_id: message.media_group_id,
+        message_type: messageType
+      }
+    });
 
     await saveChannel(supabase, chat, userId);
     await saveMessage(supabase, chat, message, userId);

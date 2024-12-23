@@ -37,7 +37,15 @@ export type Database = {
           message_id?: number | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bot_activities_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "channels"
+            referencedColumns: ["chat_id"]
+          },
+        ]
       }
       bot_users: {
         Row: {
