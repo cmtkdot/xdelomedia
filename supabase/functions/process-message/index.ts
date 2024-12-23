@@ -8,19 +8,48 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
+    console.log("Processing message request");
     const { message } = await req.json();
+    
+    // Validate message
+    if (!message || typeof message !== "string") {
+      console.error("Invalid message format received:", message);
+      return new Response(
+        JSON.stringify({ error: "Invalid message format" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Get OpenAI API key
+    const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiApiKey) {
+      console.error("OpenAI API key not configured");
+      return new Response(
+        JSON.stringify({ error: "OpenAI API key not configured" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     // Initialize OpenAI
     const configuration = new Configuration({
-      apiKey: Deno.env.get("OPENAI_API_KEY"),
+      apiKey: openaiApiKey,
     });
     const openai = new OpenAIApi(configuration);
 
+    console.log("Sending request to OpenAI");
+    
     // Process message with OpenAI
     const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
@@ -37,6 +66,7 @@ serve(async (req) => {
     });
 
     const response = completion.data.choices[0]?.message?.content || "I'm sorry, I couldn't process that request.";
+    console.log("Successfully processed message");
 
     return new Response(
       JSON.stringify({ response }),
@@ -45,9 +75,13 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error processing message:", error);
+    // Return a more detailed error response
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ 
+        error: "Internal server error",
+        details: error.message,
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
