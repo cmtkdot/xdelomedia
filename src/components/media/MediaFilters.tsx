@@ -6,7 +6,7 @@ interface MediaFiltersProps {
   setSelectedChannel: (value: string) => void;
   selectedType: string;
   setSelectedType: (value: string) => void;
-  channels: Channel[];
+  channels?: Channel[];
 }
 
 const MediaFilters = ({
@@ -14,7 +14,7 @@ const MediaFilters = ({
   setSelectedChannel,
   selectedType,
   setSelectedType,
-  channels,
+  channels = [],
 }: MediaFiltersProps) => {
   return (
     <div className="flex gap-4 mb-6">
@@ -23,7 +23,7 @@ const MediaFilters = ({
           <SelectValue placeholder="Select Channel" />
         </SelectTrigger>
         <SelectContent className="bg-gray-900 border-white/10">
-          <SelectItem value="all" className="text-white hover:bg-white/5">All Channels</SelectItem>
+          <SelectItem value="" className="text-white hover:bg-white/5">All Channels</SelectItem>
           {channels.map((channel) => (
             <SelectItem 
               key={channel.chat_id} 
@@ -41,7 +41,7 @@ const MediaFilters = ({
           <SelectValue placeholder="Select Media Type" />
         </SelectTrigger>
         <SelectContent className="bg-gray-900 border-white/10">
-          <SelectItem value="all" className="text-white hover:bg-white/5">All Types</SelectItem>
+          <SelectItem value="" className="text-white hover:bg-white/5">All Types</SelectItem>
           <SelectItem value="photo" className="text-white hover:bg-white/5">Photos</SelectItem>
           <SelectItem value="video" className="text-white hover:bg-white/5">Videos</SelectItem>
           <SelectItem value="animation" className="text-white hover:bg-white/5">Animations</SelectItem>

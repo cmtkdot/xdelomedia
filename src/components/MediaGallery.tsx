@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useMediaData } from "./media/hooks/useMediaData";
-import { useMediaSubscription } from "./media/hooks/useMediaSubscription";
+import useMediaData from "./media/hooks/useMediaData";
+import useMediaSubscription from "./media/hooks/useMediaSubscription";
 import MediaCard from "./media/MediaCard";
 import MediaFilters from "./media/MediaFilters";
 import MediaGallerySkeleton from "./media/MediaGallerySkeleton";
@@ -21,7 +21,12 @@ const MediaGallery = () => {
 
   return (
     <div className="space-y-6">
-      <MediaFilters filter={filter} onFilterChange={setFilter} />
+      <MediaFilters
+        selectedChannel={filter.selectedChannel}
+        setSelectedChannel={(value) => setFilter(prev => ({ ...prev, selectedChannel: value }))}
+        selectedType={filter.selectedType}
+        setSelectedType={(value) => setFilter(prev => ({ ...prev, selectedType: value }))}
+      />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {mediaItems?.map((item) => (

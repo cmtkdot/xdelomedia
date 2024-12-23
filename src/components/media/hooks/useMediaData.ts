@@ -1,20 +1,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MediaItem } from "../types";
+import { MediaItem, MediaFilter } from "../types";
 import { useToast } from "@/components/ui/use-toast";
 
-const useMediaData = (selectedChannel: string, selectedType: string) => {
+const useMediaData = (filter: MediaFilter) => {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchMedia();
-  }, [selectedChannel, selectedType]);
+  }, [filter.selectedChannel, filter.selectedType]);
 
   const fetchMedia = async () => {
     try {
-      console.log("Fetching media...");
+      console.log("Fetching media with filter:", filter);
       setIsLoading(true);
       let query = supabase
         .from('media')
@@ -24,12 +24,12 @@ const useMediaData = (selectedChannel: string, selectedType: string) => {
         `)
         .order('created_at', { ascending: false });
 
-      if (selectedChannel !== "all") {
-        query = query.eq('chat_id', selectedChannel);
+      if (filter.selectedChannel !== "") {
+        query = query.eq('chat_id', filter.selectedChannel);
       }
       
-      if (selectedType !== "all") {
-        query = query.eq('media_type', selectedType);
+      if (filter.selectedType !== "") {
+        query = query.eq('media_type', filter.selectedType);
       }
 
       const { data, error } = await query;
@@ -50,7 +50,7 @@ const useMediaData = (selectedChannel: string, selectedType: string) => {
     }
   };
 
-  return { media, setMedia, isLoading };
+  return { data: media, isLoading };
 };
 
 export default useMediaData;
