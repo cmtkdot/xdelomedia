@@ -1,11 +1,12 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Channel } from "./types";
 
 interface MediaFiltersProps {
   selectedChannel: string;
   setSelectedChannel: (value: string) => void;
   selectedType: string;
   setSelectedType: (value: string) => void;
-  channels: { title: string; chat_id: number }[];
+  channels: Channel[];
 }
 
 const MediaFilters = ({

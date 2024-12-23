@@ -3,21 +3,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
-import { MediaItem } from "./types";
+import { MediaItem, Channel } from "./types";
 import MediaCard from "./MediaCard";
 import MediaFilters from "./MediaFilters";
+import { useNavigate } from "react-router-dom";
 
 const MediaGallery = () => {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedChannel, setSelectedChannel] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<string>("all");
-  const [channels, setChannels] = useState<{ title: string; chat_id: number }[]>([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchChannels();
     fetchMedia();
+    setupRealtimeSubscription();
+  }, []);
+
+  const setupRealtimeSubscription = () => {
     console.log("Setting up realtime subscription");
     const subscription = supabase
       .channel('media_changes')
@@ -40,7 +46,7 @@ const MediaGallery = () => {
       console.log("Cleaning up subscription");
       subscription.unsubscribe();
     };
-  }, []);
+  };
 
   const fetchChannels = async () => {
     const { data, error } = await supabase
@@ -61,7 +67,10 @@ const MediaGallery = () => {
       setIsLoading(true);
       let query = supabase
         .from('media')
-        .select('*')
+        .select(`
+          *,
+          chat:channels!inner(title, username)
+        `)
         .order('created_at', { ascending: false });
 
       if (selectedChannel !== "all") {

@@ -6,5 +6,20 @@ export type MediaItem = Database['public']['Tables']['media']['Row'] & {
     width: number;
     height: number;
     file_size: number;
+    thumbnail_url?: string;
   } | null;
+  chat?: {
+    title: string;
+    username: string;
+  };
+};
+
+export type Channel = {
+  title: string;
+  chat_id: number;
+};
+
+export type MediaFilter = {
+  selectedChannel: string;
+  selectedType: string;
 };

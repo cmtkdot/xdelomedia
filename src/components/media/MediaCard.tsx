@@ -13,6 +13,7 @@ const MediaCard = ({ item }: MediaCardProps) => {
           src={item.file_url}
           controls
           className="w-full h-48 object-cover"
+          poster={item.metadata?.thumbnail_url}
         >
           Your browser does not support the video tag.
         </video>
@@ -36,8 +37,8 @@ const MediaCard = ({ item }: MediaCardProps) => {
         )}
         <div className="text-sm text-gray-300 space-y-1">
           <p>Type: {item.media_type}</p>
-          {item.chat_id && (
-            <p>Channel ID: {item.chat_id}</p>
+          {item.chat && (
+            <p>Channel: {item.chat.title}</p>
           )}
           {item.metadata && (
             <>
