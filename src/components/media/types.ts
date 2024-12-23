@@ -5,7 +5,6 @@ export type MediaMetadata = {
   width: number;
   height: number;
   file_size: number;
-  thumbnail_url?: string | null;
 };
 
 export type MediaItem = Database['public']['Tables']['media']['Row'] & {
