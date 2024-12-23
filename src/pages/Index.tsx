@@ -5,27 +5,6 @@ import CommandInterface from "@/components/CommandInterface";
 import Stats from "@/components/Stats";
 import { useNavigate } from "react-router-dom";
 
-const mockMessages = [
-  {
-    id: 1,
-    text: "Hello! How can I help you today?",
-    from: "Bot",
-    timestamp: "10:00 AM",
-  },
-  {
-    id: 2,
-    text: "/start",
-    from: "User",
-    timestamp: "10:01 AM",
-  },
-  {
-    id: 3,
-    text: "Welcome! I'm your friendly Telegram bot.",
-    from: "Bot",
-    timestamp: "10:01 AM",
-  },
-];
-
 const Index = () => {
   const navigate = useNavigate();
 
@@ -56,7 +35,7 @@ const Index = () => {
         <Stats users={100} messages={1234} uptime="99.9%" />
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <MessageHistory messages={mockMessages} />
+          <MessageHistory />
           <CommandInterface />
         </div>
       </div>

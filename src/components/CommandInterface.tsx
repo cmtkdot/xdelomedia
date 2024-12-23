@@ -1,39 +1,66 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const CommandInterface = () => {
-  const [command, setCommand] = useState("");
+  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!command.trim()) return;
+    if (!message.trim()) return;
 
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      const { data, error } = await supabase.functions.invoke('process-message', {
-        body: { message: command, userId: user.id }
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to send messages",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // First, save the user's message
+      const { error: messageError } = await supabase.from("messages").insert({
+        user_id: user.id,
+        sender_name: "User",
+        text: message,
+      });
+
+      if (messageError) throw messageError;
+
+      // Process the message using the Edge Function
+      const { data, error } = await supabase.functions.invoke("process-message", {
+        body: { message },
       });
 
       if (error) throw error;
 
-      toast({
-        title: "Message sent",
-        description: "Bot has processed your message",
-      });
+      // Save the bot's response
+      if (data?.response) {
+        const { error: botMessageError } = await supabase.from("messages").insert({
+          user_id: user.id,
+          sender_name: "Bot",
+          text: data.response,
+        });
 
-      setCommand("");
-    } catch (error: any) {
+        if (botMessageError) throw botMessageError;
+      }
+
+      setMessage("");
+    } catch (error) {
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -42,22 +69,20 @@ const CommandInterface = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4 text-[#0088cc]">Command Interface</h2>
+    <div className="bg-white rounded-lg shadow-md p-4">
+      <h2 className="text-xl font-semibold mb-4">Command Interface</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          value={command}
-          onChange={(e) => setCommand(e.target.value)}
-          placeholder="Type a command or message..."
-          disabled={isLoading}
-        />
-        <Button 
-          type="submit" 
-          className="w-full bg-[#0088cc] hover:bg-[#006699]"
-          disabled={isLoading}
-        >
-          {isLoading ? "Processing..." : "Send"}
-        </Button>
+        <div className="flex gap-2">
+          <Input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type a command or message..."
+            disabled={isLoading}
+          />
+          <Button type="submit" disabled={isLoading}>
+            Send
+          </Button>
+        </div>
       </form>
     </div>
   );
