@@ -3,6 +3,7 @@ import BotInfo from "@/components/BotInfo";
 import MessageHistory from "@/components/MessageHistory";
 import CommandInterface from "@/components/CommandInterface";
 import Stats from "@/components/Stats";
+import MediaGallery from "@/components/MediaGallery";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -38,6 +39,8 @@ const Index = () => {
           <MessageHistory />
           <CommandInterface />
         </div>
+
+        <MediaGallery />
       </div>
     </div>
   );
