@@ -28,7 +28,7 @@ const MediaCard = ({ item }: MediaCardProps) => {
   };
 
   return (
-    <div className="relative group backdrop-blur-lg bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
+    <div className="relative group backdrop-blur-xl bg-white/5 border border-white/10 rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
       {renderMediaContent(item)}
       <div className="p-3 backdrop-blur-lg bg-black/40">
         {item.caption && (

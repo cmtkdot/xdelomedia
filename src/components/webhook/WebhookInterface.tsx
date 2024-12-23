@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Webhook } from "lucide-react";
 
 const WebhookInterface = () => {
   const [webhookUrl, setWebhookUrl] = useState("");
@@ -63,8 +64,11 @@ const WebhookInterface = () => {
 
   return (
     <Card className="bg-transparent border border-white/10">
-      <CardHeader>
-        <CardTitle className="text-white">Webhook Interface</CardTitle>
+      <CardHeader className="space-y-1">
+        <div className="flex items-center gap-2">
+          <Webhook className="w-5 h-5 text-[#0088cc]" />
+          <CardTitle className="text-white">Webhook Interface</CardTitle>
+        </div>
         <CardDescription className="text-gray-400">
           Send media data to external webhooks
         </CardDescription>
