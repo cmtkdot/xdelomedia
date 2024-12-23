@@ -80,7 +80,22 @@ serve(async (req) => {
     const chat = message.chat;
     console.log("Processing message from chat:", chat);
 
-    // Create or update channel record - using string for user_id
+    // First, try to find an existing bot user
+    const { data: botUser, error: botUserError } = await supabase
+      .from('bot_users')
+      .select('id')
+      .eq('telegram_user_id', message.from?.id.toString())
+      .single();
+
+    if (botUserError) {
+      console.error("Error finding bot user:", botUserError);
+    }
+
+    // Use the bot user's ID if found, otherwise create a default system user ID
+    const userId = botUser?.id || '00000000-0000-0000-0000-000000000000'; // Default system user ID
+    console.log("Using user ID:", userId);
+
+    // Create or update channel record
     const { data: channelData, error: channelError } = await supabase
       .from("channels")
       .upsert({
@@ -88,7 +103,7 @@ serve(async (req) => {
         title: chat.title || `Chat ${chat.id}`,
         username: chat.username,
         is_active: true,
-        user_id: message.from?.id.toString(), // Store as string instead of trying to convert to UUID
+        user_id: userId,
       }, {
         onConflict: 'chat_id'
       })
@@ -101,7 +116,7 @@ serve(async (req) => {
       console.log("Channel saved/updated:", channelData);
     }
 
-    // Save message to database - using string for user_id
+    // Save message to database
     const { data: messageData, error: messageError } = await supabase
       .from("messages")
       .insert({
@@ -109,7 +124,7 @@ serve(async (req) => {
         message_id: message.message_id,
         sender_name: message.from?.first_name || "Unknown",
         text: message.text || message.caption || null,
-        user_id: message.from?.id.toString(), // Store as string instead of trying to convert to UUID
+        user_id: userId,
       })
       .select()
       .single();
@@ -171,7 +186,7 @@ serve(async (req) => {
 
       console.log("File uploaded, saving metadata to database...");
 
-      // Save media metadata to database - using string for user_id
+      // Save media metadata to database
       const { data: mediaData, error: mediaError } = await supabase
         .from("media")
         .insert({
@@ -180,7 +195,7 @@ serve(async (req) => {
           file_url: publicUrl.publicUrl,
           media_type: message.photo ? "photo" : mediaItem.mime_type,
           caption: message.caption,
-          user_id: message.from?.id.toString(), // Store as string instead of trying to convert to UUID
+          user_id: userId, // Using the resolved user ID
           metadata: {
             telegram_file_id: mediaItem.file_id,
             width: mediaItem.width,
@@ -204,6 +219,7 @@ serve(async (req) => {
       await supabase.from("bot_activities").insert({
         event_type: "media_saved",
         chat_id: chat.id,
+        user_id: userId,
         details: {
           media_type: message.photo ? "photo" : mediaItem.mime_type,
           file_name: fileName,
