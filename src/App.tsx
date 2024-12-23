@@ -1,76 +1,32 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import Index from "./pages/Index";
-import Login from "./pages/Login";
 import Messages from "./pages/Messages";
+import Media from "./pages/Media";
+import Settings from "./pages/Settings";
+import Login from "./pages/Login";
+import Webhooks from "./pages/Webhooks";
+import { Toaster } from "./components/ui/toaster";
 
-const queryClient = new QueryClient();
-
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(!!session);
-    });
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(!!session);
-    });
-  }, []);
-
-  if (session === null) {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
-    return <Navigate to="/login" replace />;
-  }
-
+function App() {
   return (
-    <>
-      <Navigation />
-      <div className="pt-16">
-        {children}
+    <Router>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <Navigation />
+        <div className="pt-16">
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/media" element={<Media />} />
+            <Route path="/webhooks" element={<Webhooks />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/login" element={<Login />} />
+          </Routes>
+        </div>
+        <Toaster />
       </div>
-    </>
+    </Router>
   );
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/messages"
-            element={
-              <ProtectedRoute>
-                <Messages />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+}
 
 export default App;

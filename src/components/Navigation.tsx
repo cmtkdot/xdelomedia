@@ -5,7 +5,8 @@ import {
   MessageSquare,
   Image,
   Settings,
-  LogOut
+  LogOut,
+  Webhook
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -44,6 +45,12 @@ const Navigation = () => {
                 <Button variant="ghost" className="text-white hover:bg-white/10">
                   <Image className="w-4 h-4 mr-2" />
                   Media
+                </Button>
+              </Link>
+              <Link to="/webhooks">
+                <Button variant="ghost" className="text-white hover:bg-white/10">
+                  <Webhook className="w-4 h-4 mr-2" />
+                  Webhooks
                 </Button>
               </Link>
               <Link to="/settings">
