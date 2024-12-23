@@ -1,0 +1,53 @@
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface MediaFiltersProps {
+  selectedChannel: string;
+  setSelectedChannel: (value: string) => void;
+  selectedType: string;
+  setSelectedType: (value: string) => void;
+  channels: { title: string; chat_id: number }[];
+}
+
+const MediaFilters = ({
+  selectedChannel,
+  setSelectedChannel,
+  selectedType,
+  setSelectedType,
+  channels,
+}: MediaFiltersProps) => {
+  return (
+    <div className="flex gap-4 mb-6">
+      <Select value={selectedChannel} onValueChange={setSelectedChannel}>
+        <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white">
+          <SelectValue placeholder="Select Channel" />
+        </SelectTrigger>
+        <SelectContent className="bg-gray-900 border-white/10">
+          <SelectItem value="all" className="text-white hover:bg-white/5">All Channels</SelectItem>
+          {channels.map((channel) => (
+            <SelectItem 
+              key={channel.chat_id} 
+              value={channel.chat_id.toString()}
+              className="text-white hover:bg-white/5"
+            >
+              {channel.title}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select value={selectedType} onValueChange={setSelectedType}>
+        <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white">
+          <SelectValue placeholder="Select Media Type" />
+        </SelectTrigger>
+        <SelectContent className="bg-gray-900 border-white/10">
+          <SelectItem value="all" className="text-white hover:bg-white/5">All Types</SelectItem>
+          <SelectItem value="photo" className="text-white hover:bg-white/5">Photos</SelectItem>
+          <SelectItem value="video" className="text-white hover:bg-white/5">Videos</SelectItem>
+          <SelectItem value="animation" className="text-white hover:bg-white/5">Animations</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
+export default MediaFilters;
